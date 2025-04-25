@@ -17,29 +17,24 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use App\Filament\Widgets\DashboardResumenWidget;
 
-class DashboardPanelProvider extends PanelProvider
+class JefaturaPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->id('dashboard')
-            ->path('dashboard')
+            ->id('jefatura')
+            ->path('jefatura')
             ->login()
-            ->plugins([
-                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
-            ])
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/Jefatura/Resources'), for: 'App\\Filament\\Jefatura\\Resources')
+            ->discoverPages(in: app_path('Filament/Jefatura/Pages'), for: 'App\\Filament\\Jefatura\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Jefatura/Widgets'), for: 'App\\Filament\\Jefatura\\Widgets')
             ->widgets([
                 // Widgets\AccountWidget::class,
                 // Widgets\FilamentInfoWidget::class,
@@ -57,13 +52,6 @@ class DashboardPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);          
+            ]);
     }
-
-        public static function getWidgets(): array
-        {
-        return [
-            DashboardResumenWidget::class,
-        ];
-        }
 }

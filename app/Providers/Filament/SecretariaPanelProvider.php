@@ -17,32 +17,26 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use App\Filament\Widgets\DashboardResumenWidget;
 
-class DashboardPanelProvider extends PanelProvider
+class SecretariaPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->id('dashboard')
-            ->path('dashboard')
-            ->login()
-            ->plugins([
-                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
-            ])
+            ->id('secretaria')
+            ->path('secretaria')
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/Secretaria/Resources'), for: 'App\\Filament\\Secretaria\\Resources')
+            ->discoverPages(in: app_path('Filament/Secretaria/Pages'), for: 'App\\Filament\\Secretaria\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Secretaria/Widgets'), for: 'App\\Filament\\Secretaria\\Widgets')
             ->widgets([
-                // Widgets\AccountWidget::class,
-                // Widgets\FilamentInfoWidget::class,
+                Widgets\AccountWidget::class,
+                Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -57,13 +51,6 @@ class DashboardPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);          
+            ]);
     }
-
-        public static function getWidgets(): array
-        {
-        return [
-            DashboardResumenWidget::class,
-        ];
-        }
 }

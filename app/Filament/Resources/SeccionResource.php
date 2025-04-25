@@ -69,7 +69,8 @@ class SeccionResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->recordUrl(null);
     }
 
     public static function getRelations(): array
@@ -86,5 +87,15 @@ class SeccionResource extends Resource
             'create' => Pages\CreateSeccion::route('/create'),
             'edit' => Pages\EditSeccion::route('/{record}/edit'),
         ];
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Sección';
+    }    
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Secciones';
     }
 }

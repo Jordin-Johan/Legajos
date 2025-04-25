@@ -23,6 +23,7 @@ class Empleado extends Model
         'cargo',
         'varEnlace',
         'tipoPersonal',
+        'tipoContratado',
     ];
 
     // protected $casts = [

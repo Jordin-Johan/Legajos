@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Jefatura\Resources;
 
-use App\Filament\Resources\EmpleadoResource\Pages;
-use App\Filament\Resources\EmpleadoResource\RelationManagers;
+use App\Filament\Jefatura\Resources\EmpleadoResource\Pages;
+use App\Filament\Jefatura\Resources\EmpleadoResource\RelationManagers;
 use App\Models\Empleado;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -20,14 +20,14 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Storage;
+
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class EmpleadoResource extends Resource
 {
     protected static ?string $model = Empleado::class;
 
-    protected static ?string $navigationGroup = 'Gestión de Personal';
     protected static ?string $navigationIcon = 'heroicon-o-identification';
 
     public static function form(Form $form): Form
@@ -39,9 +39,7 @@ class EmpleadoResource extends Resource
                     FileUpload::make('image')
                         ->label('Foto del empleado')
                         ->image()
-                        ->preserveFilenames()
                         ->directory('empleados')
-                        ->helperText('Formato: JPG, PNG, JPEG')
                         // ->imagePreviewHeight('30')
                         // ->imageCropAspectRatio('1:1')
                         // ->panelAspectRatio('1:1')
@@ -87,16 +85,15 @@ class EmpleadoResource extends Resource
                         ])
                         ->required(),
 
-                    Select::make('tipoContratado')
+                    Select::make('tipoContrado')
                     ->label('Tipo de Contrato')
                     ->options([
                         1 => 'CAS',
-                        2 => 'Locación',
+                        2 => 'Locación de Servicios',
                         3 => 'Nombrado',
-                        4 => 'Practicante',
                     ])
                     ->required()
-                    ->native(false), // Opcional: para un selector estilizado                
+                    ->native(false), // Opcional: para un selector estilizado               
                 ])
             ]);
     }
@@ -104,15 +101,14 @@ class EmpleadoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                //
+        ->columns([
+            //
                 ImageColumn::make('image')
                     ->label('Foto')
-                    ->rounded()
                     // ->circular()
                     ->url(fn($record) => Storage::url($record->image))
                     ->disk('public'), // Asegura que busque en el disco correcto,
-    
+
                 TextColumn::make('nombre')
                     ->label('Nombres')
                     ->searchable()
@@ -132,7 +128,7 @@ class EmpleadoResource extends Resource
                     ->label('Cargo')
                     ->searchable()
                     ->sortable(),
-    
+
                 TextColumn::make('tipoPersonal')
                     ->label('Tipo de Personal')
                     ->searchable()
@@ -142,48 +138,22 @@ class EmpleadoResource extends Resource
                     
                     ->color(fn ($state) => $state == 1 ? 'success' : 'danger'),
 
-
-                BadgeColumn::make('tipoContratado')
+                BadgeColumn::make('tipoContrado')
                     ->label('Tipo de Contrato')
-                    ->colors([
-                        'primary' => fn ($state) => $state == 1,
-                        'info' => fn ($state) => $state == 2,
-                        'success' => fn ($state) => $state == 3,
-                        'gray' => fn ($state) => $state == 4,
+                    ->enum([
+                        1 => 'CAS',
+                        2 => 'Locación de Servicios',
+                        3 => 'Nombrado',
                     ])
-                    ->formatStateUsing(function ($state) {
-                        return match ($state) {
-                            1 => 'CAS',
-                            2 => 'Locación',
-                            3 => 'Nombrado',
-                            4 => 'Practicante',
-                            default => 'Desconocido',
-                        };
-                    }),
-                    
+                    ->colors([
+                        1 => 'warning',
+                        2 => 'info',
+                        3 => 'success',
+                    ]),
+                     
             ])
             ->filters([
                 //
-                // SelectFilter::make('tipoPersonal')
-                // ->label('Tipo de Personal')
-                // ->options([
-                //     1 => 'Activo',
-                //     0 => 'Cesante',
-                // ])
-                // ->query(function (Builder $query, $state): Builder {
-                //     if ($state === null || $state === '') {
-                //         return $query;
-                //     }
-            
-                //     return $query->where('tipoPersonal', (int) $state);
-                // })
-                // ->indicateUsing(function (SelectFilter $filter): array {
-                //     return match ($filter->getState()) {
-                //         '1' => ['Tipo: Activo'],
-                //         '0' => ['Tipo: Cesante'],
-                //         default => [],
-                //     };
-                // }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -192,8 +162,7 @@ class EmpleadoResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ])
-            ->recordUrl(null);
+            ]);
     }
 
     public static function getRelations(): array

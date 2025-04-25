@@ -23,9 +23,11 @@ use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\ActionColumn;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Storage;
+use Filament\Navigation\NavigationItem;
 
 class DocumentoResource extends Resource
 {
@@ -33,6 +35,8 @@ class DocumentoResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = 'Gestión de Documentos';
+    protected static ?string $navigationLabel = 'Documentos';
+
 
     public static function form(Form $form): Form
     {
@@ -52,6 +56,7 @@ class DocumentoResource extends Resource
                     ->disk('public') // Asegúrate de tener el disco 'public' configurado
                     ->directory('documentos')
                     ->acceptedFileTypes(['application/pdf'])
+                    ->preserveFilenames()
                     ->required(),
     
                 Toggle::make('estado_documento')
@@ -112,12 +117,25 @@ class DocumentoResource extends Resource
                     ->boolean()
                     ->trueIcon('heroicon-o-check-circle')
                     ->falseIcon('heroicon-o-x-circle')
-                    ->color('success')
+                    ->colors([
+                        'success' => fn ($state) => $state === true,
+                        'danger' => fn ($state) => $state == false,
+                    ])
                     ->sortable()
                     ->toggleable(),               
             ])
             ->filters([
                 //
+                SelectFilter::make('seccion_id')
+                    ->relationship('seccion', 'nombre_seccion')
+                    ->label('Sección')
+                    ->multiple()
+                    ->placeholder('Seleccionar sección'),
+                SelectFilter::make('empleado_id')
+                    ->relationship('empleado', 'nombre')
+                    ->label('Empleado')
+                    ->multiple()
+                    ->placeholder('Seleccionar empleado'),
             ])
             ->actions([
                 Action::make('ver_pdf')
@@ -137,7 +155,8 @@ class DocumentoResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->recordUrl(null);
     }
 
     public static function getRelations(): array
@@ -153,6 +172,25 @@ class DocumentoResource extends Resource
             'index' => Pages\ListDocumentos::route('/'),
             'create' => Pages\CreateDocumento::route('/create'),
             'edit' => Pages\EditDocumento::route('/{record}/edit'),
+            'agrupados' => Pages\ListGroupedDocumentos::route('/agrupados'),
         ];
     }
+
+    public static function getNavigationItems(): array
+    {
+    return [
+        NavigationItem::make('Documentos Agrupados')
+            ->label('Documentos por Sección')
+            ->url(static::getUrl('agrupados'))
+            ->icon('heroicon-o-folder')
+            ->group('Gestión de Documentos'),
+
+        // Entrada automática del index
+        NavigationItem::make(static::getNavigationLabel())
+            ->url(static::getUrl('index'))
+            ->icon(static::getNavigationIcon())
+            ->group(static::getNavigationGroup()),
+    ];
+    }
+
 }

@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('cargo')->nullable();
             $table->string('varEnlace')->nullable();
             $table->boolean('tipoPersonal')->default(1); // 1=activo, 0=eliminado
+            $table->tinyInteger('tipoContratado'); // 1=cas, 2=locacion, 3=nombrado
             $table->timestamps();
         });
     }

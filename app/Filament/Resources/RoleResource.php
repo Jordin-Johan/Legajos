@@ -35,7 +35,8 @@ class RoleResource extends Resource
                 ->relationship('permissions', 'name')
                 ->label('Permisos')
                 ->columns(2),
-            ]);
+            ])
+            ->recordUrl(null);
     }
 
     public static function table(Table $table): Table
