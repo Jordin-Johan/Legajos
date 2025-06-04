@@ -13,7 +13,12 @@ class ListDocumentos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Crear Documento')
+                ->color('info')
+                ->modalHeading('Crear nuevo documento')
+                ->modalWidth('2xl')
+                ->slideOver()
         ];
     }
 }

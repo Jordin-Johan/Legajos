@@ -9,12 +9,18 @@ use Filament\Resources\Pages\Page;
 class ListGroupedDocumentos extends Page
 {
     protected static string $resource = DocumentoResource::class;
-
     protected static string $view = 'filament.resources.documento-resource.pages.list-grouped-documentos';
+    protected static ?string $navigationIcon = 'heroicon-o-folder';
+    protected static ?string $navigationGroup = 'Gestión de Documentos';
+    protected static ?string $navigationLabel = 'Documentos por Sección';
+    protected static ?string $slug = 'agrupados';
 
-    public $empleados;
+    public function getTitle(): string
+    {
+        return 'Lista de Documentos Agrupados';
+    }
 
-    public function mount()
+    public function getViewData(): array
     {
         $query = Empleado::with(['documentos.seccion']);
 
@@ -29,7 +35,15 @@ class ListGroupedDocumentos extends Page
             $query->where('tipoPersonal', request('tipo'));
         }
 
-        // ⚠️ Aquí ya NO usar paginate(), porque no puedes paginar con propiedades públicas
-        $this->empleados = $query->get();
+        $empleados = $query->paginate(10);
+
+        return [
+            'empleados' => $empleados,
+        ];
+    }
+
+    public static function shouldRegisterNavigation(array $parameters = []): bool
+    {
+        return true;
     }
 }

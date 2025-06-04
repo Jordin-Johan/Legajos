@@ -46,24 +46,33 @@ class SeccionResource extends Resource
             ->columns([
                 //
                 TextColumn::make('nombre_seccion')
-                ->label('Nombre de la sección')
-                ->searchable()
-                ->sortable(),
-                
+                    ->label('Nombre de la sección')
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('descripcion')
-                ->label('Descripción de la sección')
-                ->searchable()
-                ->sortable(),
+                    ->label('Descripción de la sección')
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 //
                 Filter::make('nombre_seccion')
                     ->label('Nombre de la sección')
-                    ->query(fn (Builder $query): Builder => $query->where('nombre_seccion', '!=', '')),
+                    ->query(fn(Builder $query): Builder => $query->where('nombre_seccion', '!=', '')),
 
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->modalHeading('Editar sección')
+                    ->color('warning')
+                    ->slideOver()
+                    // ->modalWidth('lg')
+                    ->label(''),
+                    
+                Tables\Actions\DeleteAction::make()
+                ->label(''),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -84,15 +93,15 @@ class SeccionResource extends Resource
     {
         return [
             'index' => Pages\ListSeccions::route('/'),
-            'create' => Pages\CreateSeccion::route('/create'),
-            'edit' => Pages\EditSeccion::route('/{record}/edit'),
+            // 'create' => Pages\CreateSeccion::route('/create'),
+            // 'edit' => Pages\EditSeccion::route('/{record}/edit'),
         ];
     }
 
     public static function getModelLabel(): string
     {
         return 'Sección';
-    }    
+    }
 
     public static function getPluralModelLabel(): string
     {

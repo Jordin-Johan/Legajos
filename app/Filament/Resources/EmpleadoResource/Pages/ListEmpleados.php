@@ -13,7 +13,12 @@ class ListEmpleados extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Crear Empleado')
+                ->color('info')
+                ->modalHeading('Crear nuevo empleado')
+                ->modalWidth('2xl')
+                ->slideOver()
         ];
     }
 }

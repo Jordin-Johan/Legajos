@@ -16,10 +16,6 @@ class Seccion extends Model
         'descripcion',
         
     ];
-    
-    public function empleado(){
-        return $this->belongsTo(Empleado::class);
-    }
 
     public function documentos(){
         return $this->hasMany(Documento::class);

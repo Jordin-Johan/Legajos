@@ -27,6 +27,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Route;
 use Filament\Navigation\NavigationItem;
 
 class DocumentoResource extends Resource
@@ -37,39 +38,41 @@ class DocumentoResource extends Resource
     protected static ?string $navigationGroup = 'Gestión de Documentos';
     protected static ?string $navigationLabel = 'Documentos';
 
-
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                //
                 TextInput::make('titulo_documento')
                     ->label('Título del documento')
                     ->required(),
 
-                    Textarea::make('descripcion_documento')
+                Textarea::make('descripcion_documento')
+                    ->label('Descripción del documento')
                     ->required()
                     ->maxLength(250),
-    
+
                 FileUpload::make('archivo_ruta')
                     ->label('Archivo PDF')
-                    ->disk('public') // Asegúrate de tener el disco 'public' configurado
+                    ->disk('public')
                     ->directory('documentos')
                     ->acceptedFileTypes(['application/pdf'])
                     ->preserveFilenames()
+                    ->columnSpanFull()
                     ->required(),
-    
-                Toggle::make('estado_documento')
-                    ->label('Activo')
-                    ->default(true),   
+
+                // Toggle::make('estado_documento')
+                //     ->label('Documento Activo')
+                //     ->default(true),
 
                 Select::make('seccion_id')
                     ->relationship('seccion', 'nombre_seccion')
+                    ->label('Sección')
                     ->searchable()
                     ->required(),
-    
+
                 Select::make('empleado_id')
-                    ->relationship('empleado', 'nombre') // Asegúrate de tener el atributo `nombre` en tu modelo
+                    ->relationship('empleado', 'nombre')
+                    ->label('Empleado')
                     ->searchable()
                     ->required(),
             ]);
@@ -79,16 +82,15 @@ class DocumentoResource extends Resource
     {
         return $table
             ->columns([
-                //
                 TextColumn::make('titulo_documento')
-                ->label('Título del documento')
+                    ->label('Título del documento')
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('descripcion_documento')
-                    ->label('Descripción')
-                    ->limit(50)
-                    ->searchable(),
+                // TextColumn::make('descripcion_documento')
+                //     ->label('Descripción')
+                //     ->limit(50)
+                //     ->searchable(),
 
                 TextColumn::make('empleado.nombre')
                     ->label('Empleado')
@@ -97,63 +99,141 @@ class DocumentoResource extends Resource
                 TextColumn::make('seccion.nombre_seccion')
                     ->label('Sección')
                     ->searchable(),
-                
-                BadgeColumn::make('estado_documento')
-                    ->label('Estado')
-                    ->colors([
-                        'success' => fn ($state) => $state === true,
-                        'danger' => fn ($state) => $state === false,
-                    ])
-                    ->formatStateUsing(fn ($state) => $state ? 'Activo' : 'Inactivo'),
 
                 TextColumn::make('created_at')
                     ->label('Fecha de subida')
                     ->dateTime()
-                    ->formatStateUsing(fn ($state) => $state ? $state->format('d/m/Y H:i:s') : null)
-                    ->sortable(),               
+                    ->formatStateUsing(fn($state) => $state ? $state->format('d/m/Y H:i:s') : null),
 
-                IconColumn::make('estado_documento')
+                // SWITCH/TOGGLE para cambiar estado
+                ToggleColumn::make('estado_documento')
                     ->label('Estado')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
-                    ->colors([
-                        'success' => fn ($state) => $state === true,
-                        'danger' => fn ($state) => $state == false,
+                    ->onColor('success')
+                    ->offColor('danger')
+                    ->alignCenter()
+                    ->extraAttributes([
+                        'style' => 'transform: scale(0.5);' // Hace el toggle 20% más pequeño
                     ])
-                    ->sortable()
-                    ->toggleable(),               
+                    ->beforeStateUpdated(function ($record, $state) {
+                        // Opcional: validaciones antes de cambiar el estado
+                        return $state;
+                    })
+                    ->afterStateUpdated(function ($record, $state) {
+                        // Opcional: mostrar notificación después del cambio
+                        \Filament\Notifications\Notification::make()
+                            ->title('Estado actualizado')
+                            ->body('El documento ha sido ' . ($state ? 'activado' : 'desactivado'))
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->filters([
-                //
                 SelectFilter::make('seccion_id')
                     ->relationship('seccion', 'nombre_seccion')
                     ->label('Sección')
                     ->multiple()
                     ->placeholder('Seleccionar sección'),
+
                 SelectFilter::make('empleado_id')
                     ->relationship('empleado', 'nombre')
                     ->label('Empleado')
                     ->multiple()
                     ->placeholder('Seleccionar empleado'),
+
+                SelectFilter::make('estado_documento')
+                    ->label('Estado')
+                    ->options([
+                        '1' => 'Activo',
+                        '0' => 'Inactivo',
+                    ])
+                    ->placeholder('Todos los estados'),
             ])
             ->actions([
                 Action::make('ver_pdf')
-                    ->label('Ver PDF')
+                    ->label('')
                     ->icon('heroicon-o-eye')
-                    ->url(fn ($record) => Storage::url($record->archivo_ruta))
+                    ->url(fn($record) => Storage::url($record->archivo_ruta))
                     ->openUrlInNewTab()
-                    ->color('primary'),
-                EditAction::make(),
+                    ->color('gray')
+                    ->tooltip('Ver PDF'),
+
+                EditAction::make()
+                    ->modalHeading('Editar Documento')
+                    ->color('warning')
+                    ->slideOver()
+                    ->modalWidth('2xl')
+                    ->label('')
+                    ->tooltip('Editar documento'),
+
                 Action::make('Descargar')
                     ->icon('heroicon-o-document-arrow-down')
-                    ->url(fn ($record) => asset('storage/' . $record->archivo))
-                    ->openUrlInNewTab(),
+                    ->url(fn($record) => asset('storage/' . $record->archivo_ruta))
+                    ->color('success')
+                    ->label('')
+                    ->openUrlInNewTab()
+                    ->tooltip('Descargar PDF'),
 
+                // Opcional: mantener acción de cambio de estado como respaldo
+                Action::make('toggleEstado')
+                    ->label('')
+                    ->icon(fn($record) => $record->estado_documento ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->color(fn($record) => $record->estado_documento ? 'success' : 'danger')
+                    ->action(function ($record) {
+                        $record->update([
+                            'estado_documento' => !$record->estado_documento,
+                        ]);
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Estado cambiado')
+                            ->body('El documento ha sido ' . ($record->estado_documento ? 'activado' : 'desactivado'))
+                            ->success()
+                            ->send();
+                    })
+                    ->tooltip('Cambiar estado')
+                    ->hidden(), // Ocultar porque ya tenemos el ToggleColumn
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+
+                    // Acciones en lote para cambiar estado
+                    Tables\Actions\BulkAction::make('activar_documentos')
+                        ->label('Activar seleccionados')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->action(function ($records) {
+                            $records->each(function ($record) {
+                                $record->update(['estado_documento' => true]);
+                            });
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Documentos activados')
+                                ->body(count($records) . ' documentos han sido activados')
+                                ->success()
+                                ->send();
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Activar documentos seleccionados')
+                        ->modalDescription('¿Estás seguro de que quieres activar todos los documentos seleccionados?'),
+
+                    Tables\Actions\BulkAction::make('desactivar_documentos')
+                        ->label('Desactivar seleccionados')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->action(function ($records) {
+                            $records->each(function ($record) {
+                                $record->update(['estado_documento' => false]);
+                            });
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Documentos desactivados')
+                                ->body(count($records) . ' documentos han sido desactivados')
+                                ->success()
+                                ->send();
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Desactivar documentos seleccionados')
+                        ->modalDescription('¿Estás seguro de que quieres desactivar todos los documentos seleccionados?'),
                 ]),
             ])
             ->recordUrl(null);
@@ -161,36 +241,37 @@ class DocumentoResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListDocumentos::route('/'),
-            'create' => Pages\CreateDocumento::route('/create'),
-            'edit' => Pages\EditDocumento::route('/{record}/edit'),
             'agrupados' => Pages\ListGroupedDocumentos::route('/agrupados'),
+            'secciones-empleado' => Pages\SeccionesEmpleado::route('/secciones-empleado/{empleado}'),
+            'documentos-seccion' => Pages\DocumentosSeccion::route('/documentos-seccion/{empleado}/{seccion}'),
         ];
     }
 
     public static function getNavigationItems(): array
     {
-    return [
-        NavigationItem::make('Documentos Agrupados')
-            ->label('Documentos por Sección')
-            ->url(static::getUrl('agrupados'))
-            ->icon('heroicon-o-folder')
-            ->group('Gestión de Documentos'),
+        return [
+            NavigationItem::make('Documentos Agrupados')
+                ->label('Documentos por Sección')
+                ->url(static::getUrl('agrupados'))
+                ->icon('heroicon-o-folder')
+                ->group('Gestión de Documentos'),
 
-        // Entrada automática del index
-        NavigationItem::make(static::getNavigationLabel())
-            ->url(static::getUrl('index'))
-            ->icon(static::getNavigationIcon())
-            ->group(static::getNavigationGroup()),
-    ];
+            NavigationItem::make(static::getNavigationLabel())
+                ->url(static::getUrl('index'))
+                ->icon(static::getNavigationIcon())
+                ->group(static::getNavigationGroup())
+        ];
     }
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return true;
+    }
 }

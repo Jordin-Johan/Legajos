@@ -7,14 +7,19 @@ use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\TextInput;   
+use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\CheckboxList;
+use Filament\Tables\Actions;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Columns\ImageColumn;
+use Illuminate\Support\Facades\Storage;
+
 
 class UserResource extends Resource
 {
@@ -27,21 +32,42 @@ class UserResource extends Resource
         return $form
             ->schema([
                 //
+                FileUpload::make('foto')
+                    ->label('Foto de perfil')
+                    ->image()
+                    ->directory('users')
+                    ->imageEditor()
+                    ->imageCropAspectRatio('1:1')
+                    ->preserveFilenames()
+                    ->columnSpanFull(),
+
                 TextInput::make('name')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->label('Nombre')
+                    ->suffixIcon('heroicon-o-user'),
+
                 TextInput::make('email')
                     ->required()
                     ->email()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->label('Correo')
+                    ->suffixIcon('heroicon-o-at-symbol'),
+
                 TextInput::make('password')
                     ->required()
-                    ->password(),
-                CheckboxList::make('roles')
+                    ->password()
+                    ->label('Contraseña')
+                    ->suffixIcon('heroicon-o-lock-closed')
+                    ->dehydrated(fn($state) => filled($state)) // Solo guarda si se ha escrito algo
+                    ->required(fn(string $context) => $context === 'create'), // Obligatoria solo al crear,
+
+                Select::make('roles')
                     ->relationship('roles', 'name')
-                    ->label('Roles')
-                    ->columns(2)
-                    // ->required(),
+                    ->multiple()
+                    ->preload()
+                    ->searchable()
+                    ->label('Rol'),
             ]);
     }
 
@@ -49,35 +75,51 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
+                ImageColumn::make('foto')
+                    ->label('Foto')
+                    // ->preserveFilenames()
+                    ->rounded()
+                    ->url(fn($record) => Storage::url($record->foto))
+                    ->disk('public'),
+
                 TextColumn::make('name')
                     ->sortable()
                     ->searchable()
-                    ->label('Name'),
+                    ->label('Nombre'),
+
                 TextColumn::make('email')
                     ->sortable()
                     ->searchable()
-                    ->label('Email'),
+                    ->label('Correo'),
+
                 TextColumn::make('roles.name')
-                    ->label('Roles')
                     ->sortable()
-                    ->wrap()
-                    ->getStateUsing(function ($record) {
-                        return $record->roles->pluck('name')->join(', ');
-                    }),
+                    ->searchable()
+                    ->label('Rol'),
+
                 TextColumn::make('created_at')
                     ->sortable()
-                    ->dateTime()
-                    ->label('Created At'),
+                    ->dateTime('d/m/Y H:i:s')
+                    ->label('Fecha Creado'),
+
                 TextColumn::make('updated_at')
                     ->sortable()
-                    ->dateTime()
-                    ->label('Updated At'),
+                    ->dateTime('d/m/Y H:i:s')
+                    ->label('Actualizado'),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->modalHeading('Editar Usuario')
+                    ->color('warning')
+                    ->slideOver()
+                    ->modalWidth('2xl')
+                    ->label(''),
+
+                Tables\Actions\DeleteAction::make()
+                    ->label(''),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -98,8 +140,8 @@ class UserResource extends Resource
     {
         return [
             'index' => Pages\ListUsers::route('/'),
-            'create' => Pages\CreateUser::route('/create'),
-            'edit' => Pages\EditUser::route('/{record}/edit'),
+            // 'create' => Pages\CreateUser::route('/create'),
+            // 'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
     //codigo para cambier el nombre de la tabla user a español
@@ -107,7 +149,7 @@ class UserResource extends Resource
     {
         return 'Usuario';
     }
-    
+
     public static function getPluralModelLabel(): string
     {
         return 'Usuarios';

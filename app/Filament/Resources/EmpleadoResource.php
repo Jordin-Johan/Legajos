@@ -14,6 +14,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\IconColumn;
@@ -34,28 +35,32 @@ class EmpleadoResource extends Resource
     {
         return $form
             ->schema([
-                //
-                Grid::make(2)->schema([ // Organiza en 2 columnas
+
+                Grid::make(2)->schema([
                     FileUpload::make('image')
                         ->label('Foto del empleado')
                         ->image()
                         ->preserveFilenames()
                         ->directory('empleados')
+                        ->imageEditor()
                         ->helperText('Formato: JPG, PNG, JPEG')
-                        // ->imagePreviewHeight('30')
-                        // ->imageCropAspectRatio('1:1')
-                        // ->panelAspectRatio('1:1')
                         ->visibility('public')
-                        ->required(),
-    
-                    TextInput::make('nombre')
-                        ->required()
-                        ->maxLength(100),
-    
-                    TextInput::make('apellido')
-                        ->required()
-                        ->maxLength(100),
-    
+                        ->columnSpanFull(),
+
+                ]),
+                TextInput::make('nombre')
+                    ->label('Nombres')
+                    ->required()
+                    ->maxLength(100)
+                    ->suffixIcon('heroicon-o-user'),
+
+                TextInput::make('apellido')
+                    ->label('Apellidos')
+                    ->required()
+                    ->maxLength(100)
+                    ->suffixIcon('heroicon-o-user-circle'),
+
+                Grid::make(2)->schema([
                     TextInput::make('dni')
                         ->label('DNI')
                         ->required()
@@ -63,31 +68,43 @@ class EmpleadoResource extends Resource
                         ->minLength(8)
                         ->maxLength(8)
                         ->extraAttributes(['maxlength' => 8])
-                        ->unique(ignoreRecord: true),
+                        ->unique(ignoreRecord: true)
+                        ->columnSpanFull()
+                        ->suffixIcon('heroicon-o-identification'),
 
-                    TextInput::make('direccion')
-                        ->maxLength(250),
-    
-                    TextInput::make('correo')
-                        ->email()
-                        ->maxLength(250),
-    
-                    TextInput::make('cargo')
-                        ->maxLength(100),
-    
-                    TextInput::make('varEnlace')->label('Enlace Web')
-                        ->helperText('Ej: https://www.ejemplo.com')
-                        ->nullable(),
-        
-                    Select::make('tipoPersonal')
-                    ->label('Tipo de Personal')                                         
-                        ->options([
-                            1 => 'Activo',
-                            0 => 'Cesante',
-                        ])
-                        ->required(),
+                ]),
 
-                    Select::make('tipoContratado')
+                TextInput::make('direccion')
+                    ->maxLength(250)
+                    ->suffixIcon('heroicon-o-map-pin'),
+
+                TextInput::make('correo')
+                    ->email()
+                    ->maxLength(250)
+                    ->suffixIcon('heroicon-o-at-symbol')
+                    ->unique(ignoreRecord: true),
+
+
+                TextInput::make('cargo')
+                    ->maxLength(100)
+                    ->suffixIcon('heroicon-o-briefcase'),
+
+                TextInput::make('varEnlace')
+                    ->label('Enlace Web')
+                    ->placeholder('https://www.ejemplo.com')
+                    ->nullable()
+                    ->suffixIcon('heroicon-o-link'),
+
+                Select::make('tipoPersonal')
+                    ->label('Tipo de Personal')
+                    ->options([
+                        1 => 'Activo',
+                        0 => 'Cesante',
+                    ])
+                    ->required()
+                    ->native(false),
+
+                Select::make('tipoContratado')
                     ->label('Tipo de Contrato')
                     ->options([
                         1 => 'CAS',
@@ -97,7 +114,7 @@ class EmpleadoResource extends Resource
                     ])
                     ->required()
                     ->native(false), // Opcional: para un selector estilizado                
-                ])
+
             ]);
     }
 
@@ -108,11 +125,11 @@ class EmpleadoResource extends Resource
                 //
                 ImageColumn::make('image')
                     ->label('Foto')
+                    // ->preserveFilenames()
                     ->rounded()
-                    // ->circular()
                     ->url(fn($record) => Storage::url($record->image))
                     ->disk('public'), // Asegura que busque en el disco correcto,
-    
+
                 TextColumn::make('nombre')
                     ->label('Nombres')
                     ->searchable()
@@ -132,24 +149,24 @@ class EmpleadoResource extends Resource
                     ->label('Cargo')
                     ->searchable()
                     ->sortable(),
-    
+
                 TextColumn::make('tipoPersonal')
                     ->label('Tipo de Personal')
                     ->searchable()
                     ->sortable()
-                    ->formatStateUsing(fn ($state) => $state == 1 ? 'Activo' : 'Cesante')
+                    ->formatStateUsing(fn($state) => $state == 1 ? 'Activo' : 'Cesante')
                     ->badge()
-                    
-                    ->color(fn ($state) => $state == 1 ? 'success' : 'danger'),
+
+                    ->color(fn($state) => $state == 1 ? 'success' : 'danger'),
 
 
                 BadgeColumn::make('tipoContratado')
                     ->label('Tipo de Contrato')
                     ->colors([
-                        'primary' => fn ($state) => $state == 1,
-                        'info' => fn ($state) => $state == 2,
-                        'success' => fn ($state) => $state == 3,
-                        'gray' => fn ($state) => $state == 4,
+                        'primary' => fn($state) => $state == 1,
+                        'info' => fn($state) => $state == 2,
+                        'success' => fn($state) => $state == 3,
+                        'gray' => fn($state) => $state == 4,
                     ])
                     ->formatStateUsing(function ($state) {
                         return match ($state) {
@@ -160,33 +177,19 @@ class EmpleadoResource extends Resource
                             default => 'Desconocido',
                         };
                     }),
-                    
+
             ])
-            ->filters([
-                //
-                // SelectFilter::make('tipoPersonal')
-                // ->label('Tipo de Personal')
-                // ->options([
-                //     1 => 'Activo',
-                //     0 => 'Cesante',
-                // ])
-                // ->query(function (Builder $query, $state): Builder {
-                //     if ($state === null || $state === '') {
-                //         return $query;
-                //     }
-            
-                //     return $query->where('tipoPersonal', (int) $state);
-                // })
-                // ->indicateUsing(function (SelectFilter $filter): array {
-                //     return match ($filter->getState()) {
-                //         '1' => ['Tipo: Activo'],
-                //         '0' => ['Tipo: Cesante'],
-                //         default => [],
-                //     };
-                // }),
-            ])
+            ->filters([])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->modalHeading('Editar Usuario')
+                    ->color('warning')
+                    ->slideOver()
+                    ->modalWidth('2xl')
+                    ->label(''),
+
+                Tables\Actions\DeleteAction::make()
+                    ->label(''),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -207,8 +210,8 @@ class EmpleadoResource extends Resource
     {
         return [
             'index' => Pages\ListEmpleados::route('/'),
-            'create' => Pages\CreateEmpleado::route('/create'),
-            'edit' => Pages\EditEmpleado::route('/{record}/edit'),
+            // 'create' => Pages\CreateEmpleado::route('/create'),
+            // 'edit' => Pages\EditEmpleado::route('/{record}/edit'),
         ];
     }
 }

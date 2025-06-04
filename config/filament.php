@@ -85,5 +85,11 @@ return [
     */
 
     'livewire_loading_delay' => 'default',
+    
+    'auth' => [
+        'pages' => [
+            'login' => \App\Livewire\Auth\Login::class,
+        ],
+    ],
 
 ];

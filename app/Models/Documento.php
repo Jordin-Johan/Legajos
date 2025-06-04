@@ -22,11 +22,11 @@ class Documento extends Model
 
     public function seccion(): BelongsTo
     {
-        return $this->belongsTo(Seccion::class);
+        return $this->belongsTo(Seccion::class, 'seccion_id');
     }
     
     public function empleado(): BelongsTo
     {
-        return $this->belongsTo(Empleado::class);
+        return $this->belongsTo(Empleado::class, 'empleado_id');
     }
 }
