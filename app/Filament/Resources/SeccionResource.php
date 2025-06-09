@@ -3,9 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\SeccionResource\Pages;
-use App\Filament\Resources\SeccionResource\RelationManagers;
 use App\Models\Seccion;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -13,7 +11,6 @@ use Filament\Tables\Table;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Filters\Filter;
 
 class SeccionResource extends Resource
@@ -22,6 +19,7 @@ class SeccionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-circle-stack';
     protected static ?string $navigationGroup = 'Gestión de Personal';
+     protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
@@ -35,7 +33,6 @@ class SeccionResource extends Resource
                     ->helperText('Ej: Recusos Humanos'),
                 TextInput::make('descripcion')
                     ->label('Descripción de la sección')
-                    ->required()
                     ->maxLength(255),
             ]);
     }
@@ -69,9 +66,9 @@ class SeccionResource extends Resource
                     ->slideOver()
                     // ->modalWidth('lg')
                     ->label(''),
-                    
+
                 Tables\Actions\DeleteAction::make()
-                ->label(''),
+                    ->label(''),
 
             ])
             ->bulkActions([

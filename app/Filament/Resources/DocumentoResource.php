@@ -3,31 +3,21 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\DocumentoResource\Pages;
-use App\Filament\Resources\DocumentoResource\RelationManagers;
 use App\Models\Documento;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ToggleColumn;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Columns\ActionColumn;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Route;
 use Filament\Navigation\NavigationItem;
 
 class DocumentoResource extends Resource
@@ -37,6 +27,7 @@ class DocumentoResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = 'Gestión de Documentos';
     protected static ?string $navigationLabel = 'Documentos';
+    protected static ?int $navigationSort = 5;
 
     public static function form(Form $form): Form
     {

@@ -17,11 +17,12 @@ class ListGroupedDocumentos extends Page
 
     public function getTitle(): string
     {
-        return 'Lista de Documentos Agrupados';
+        return 'Documentos por sección';
     }
 
     public function getViewData(): array
     {
+        // Mostrar TODOS los empleados creados, no solo los que tienen documentos
         $query = Empleado::with(['documentos.seccion']);
 
         if (request()->filled('search')) {

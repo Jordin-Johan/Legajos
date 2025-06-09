@@ -11,7 +11,7 @@
         <!-- Fondo con imagen -->
         <div class="relative hidden h-full flex-col p-10 text-white lg:flex dark:border-e dark:border-neutral-800"
             style="background-image: url('{{ asset('assets/images/morales-bg.jpg') }}'); background-size: cover; background-position: left;">
-            <div class="absolute inset-0 bg-black/50"></div>
+            <div class="absolute inset-0 bg-black/20"></div>
 
             <!-- Logo e Inicio con animación de entrada -->
             <a href="{{ route('login') }}"
@@ -45,7 +45,7 @@
                 <blockquote class="space-y-2">
                     <h2 class="text-lg font-semibold leading-tight">&ldquo;{{ trim($message) }}&rdquo;</h2>
                     <footer>
-                        <p class="text-sm font-light text-neutral-300">— {{ trim($author) }}</p>
+                        <p class="text-sm font-light text-white">— {{ trim($author) }}</p>
                     </footer>
                 </blockquote>
             </div>

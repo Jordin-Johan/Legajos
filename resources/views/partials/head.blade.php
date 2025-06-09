@@ -1,9 +1,9 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<title>Legajos | Login</title>
+<title>Login | Legajos</title>
 
-<link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
+<link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 <link rel="icon" href="/assets/images/morales.png" type="image/png" sizes="48x48" >
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 

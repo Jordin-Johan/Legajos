@@ -3,9 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\EmpleadoResource\Pages;
-use App\Filament\Resources\EmpleadoResource\RelationManagers;
 use App\Models\Empleado;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -14,14 +12,9 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Storage;
 
 class EmpleadoResource extends Resource
@@ -30,6 +23,7 @@ class EmpleadoResource extends Resource
 
     protected static ?string $navigationGroup = 'Gestión de Personal';
     protected static ?string $navigationIcon = 'heroicon-o-identification';
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
@@ -110,7 +104,6 @@ class EmpleadoResource extends Resource
                         1 => 'CAS',
                         2 => 'Locación',
                         3 => 'Nombrado',
-                        4 => 'Practicante',
                     ])
                     ->required()
                     ->native(false), // Opcional: para un selector estilizado                

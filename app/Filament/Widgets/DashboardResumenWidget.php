@@ -5,16 +5,20 @@ namespace App\Filament\Widgets;
 use App\Models\Empleado;
 use App\Models\Documento;
 use App\Models\Seccion;
-use Filament\Widgets\Widget;
-use Filament\Notifications\Notification;
-use Filament\Widgets\StatsOverviewWidget\Stat;
 use Filament\Widgets\StatsOverviewWidget;
-use Asantibanez\LivewireCharts\LivewireColumnChart;
+use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardResumenWidget extends StatsOverviewWidget
 {
     protected static ?string $pollingInterval = null;
     protected static ?int $sort = 1;
+
+    protected function getHeading(): ?string
+    {
+        $nombre = Auth::check() ? Auth::user()->name : 'Usuario'; // Verificamos si hay un usuario autenticado
+        return "Bienvenido, {$nombre}";
+    }
 
     protected function getStats(): array
     {
@@ -49,5 +53,5 @@ class DashboardResumenWidget extends StatsOverviewWidget
                 ->extraAttributes(['class' => 'flex flex-col items-center justify-center text-center'])
                 ->color('info'),
         ];
-    } 
+    }
 }
